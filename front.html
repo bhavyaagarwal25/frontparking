@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to Parking Management System</title>
+  <style>
+    /* Background and animation */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+    }
+
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #4ca1af, #2980b9);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .welcome-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      color: white;
+      text-align: center;
+      z-index: 1;
+      position: relative;
+      padding: 20px;
+    }
+
+    .welcome-page h1 {
+      font-size: 3.5rem;
+      color: #f1c40f;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 20px 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(241, 196, 15, 0.6);
+      animation: fadeIn 2s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .next-button {
+      margin-top: 40px;
+      background-color: #f1c40f;
+      color: #333;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      border-radius: 50px;
+      cursor: pointer;
+      animation: bounce 2s infinite;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      transition: transform 0.3s;
+    }
+
+    .next-button:hover {
+      background-color: #f39c12;
+      transform: scale(1.1);
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 768px) {
+      .welcome-page h1 {
+        font-size: 2.2rem;
+        padding: 15px 20px;
+      }
+
+      .next-button {
+        font-size: 1rem;
+        padding: 12px 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background particle container -->
+  <div id="particles-js"></div>
+
+  <!-- Welcome Page Content -->
+  <div class="welcome-page">
+    <h1>Welcome to Parking Management System</h1>
+    <button class="next-button" onclick="goToCameraPage()">➜ Proceed</button>
+  </div>
+
+  <!-- Particle.js script -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <!-- Initialize particles -->
+  <script>
+    particlesJS("particles-js", {
+      "particles": {
+        "number": { "value": 80 },
+        "color": { "value": "#ffffff" },
+        "shape": {
+          "type": "circle",
+          "stroke": { "width": 0, "color": "#000000" }
+        },
+        "opacity": {
+          "value": 0.5,
+          "random": true
+        },
+        "size": {
+          "value": 3,
+          "random": true
+        },
+        "line_linked": {
+          "enable": true,
+          "distance": 150,
+          "color": "#ffffff",
+          "opacity": 0.4,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 2,
+          "direction": "none",
+          "random": false,
+          "straight": false,
+          "out_mode": "out"
+        }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": { "enable": true, "mode": "grab" },
+          "onclick": { "enable": true, "mode": "push" }
+        },
+        "modes": {
+          "grab": { "distance": 140, "line_linked": { "opacity": 1 } },
+          "push": { "particles_nb": 4 }
+        }
+      },
+      "retina_detect": true
+    });
+
+    function goToCameraPage() {
+      // Redirect to your camera capture page
+      window.location.href = "camera.html"; // Change this to your actual camera page
+    }
+  </script>
+
+</body>
+</html>

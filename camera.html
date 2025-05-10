@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicle Capture - Parking Management</title>
+  <style>
+  html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: transparent;
+  overflow-x: hidden;
+}
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      overflow: auto; /* Allow natural scrolling */
+      background-color: #1e3c72;
+    }
+
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #4ca1af, #2980b9);
+      background-size: 500% 500%;
+      animation: gradientBG 15s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      width: 100vw;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+      padding: 40px;
+      box-sizing: border-box;
+      border-radius: 0;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      color: #0b0900;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    button {
+      background-color: #f1c40f;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      color: #333;
+      border-radius: 10px;
+      margin: 15px 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    button:hover {
+      background-color: #f39c12;
+      transform: scale(1.05);
+    }
+
+    video {
+      border: 4px solid #f1c40f;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .image-container img {
+      margin-top: 20px;
+      border-radius: 15px;
+      max-width: 100%;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+    }
+
+    .data-display {
+      margin-top: 25px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .data-display p {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      margin: 10px 0;
+      text-align: left;
+    }
+
+    #retakeBtn {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      h2 {
+        font-size: 1.8rem;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 1rem;
+      }
+
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Particle Effect -->
+  <div id="particles-js"></div>
+
+  <div class="container">
+    <h2>Capture Vehicle Number Plate - Parking Management System</h2>
+
+    <button onclick="startCamera()">Start Camera</button>
+    <button onclick="capturePhoto()">Capture Photo</button>
+    <button id="retakeBtn" onclick="retakePhoto()">Retake Photo</button>
+
+    <video id="video" width="320" height="240" autoplay></video>
+    <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
+
+    <div class="image-container">
+      <h3>Captured Vehicle Image</h3>
+      <img id="capturedImage" src="" alt="Captured Vehicle" />
+    </div>
+
+    <div class="data-display" id="parkingSlotData">
+      <p><strong>Slot ID:</strong> A1</p>
+      <p><strong>Timestamp:</strong> --</p>
+      <p><strong>Plate Number:</strong> --</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <script>
+    particlesJS("particles-js", {
+      "particles": {
+        "number": { "value": 80 },
+        "color": { "value": "#ffffff" },
+        "shape": {
+          "type": "circle",
+          "stroke": { "width": 0, "color": "#000000" }
+        },
+        "opacity": { "value": 0.5, "random": true },
+        "size": { "value": 3, "random": true },
+        "line_linked": {
+          "enable": true,
+          "distance": 150,
+          "color": "#ffffff",
+          "opacity": 0.4,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 2,
+          "direction": "none",
+          "random": false,
+          "straight": false,
+          "out_mode": "out"
+        }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": { "enable": true, "mode": "grab" },
+          "onclick": { "enable": true, "mode": "push" }
+        },
+        "modes": {
+          "grab": { "distance": 140, "line_linked": { "opacity": 1 } },
+          "push": { "particles_nb": 4 }
+        }
+      },
+      "retina_detect": true
+    });
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const capturedImage = document.getElementById('capturedImage');
+    const parkingSlotData = document.getElementById('parkingSlotData');
+    const retakeBtn = document.getElementById('retakeBtn');
+    let stream;
+
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(st => {
+          stream = st;
+          video.srcObject = stream;
+          setTimeout(capturePhoto, 2000); // Auto capture
+        })
+        .catch(error => {
+          alert("Camera not accessible.");
+          console.error(error);
+        });
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      }
+    }
+
+    function capturePhoto() {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/png');
+      capturedImage.src = imageData;
+
+      fetch('http://127.0.0.1:8080/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const plate = data.plate_number || "Not Detected";
+        parkingSlotData.innerHTML = ` 
+          <p><strong>Slot ID:</strong> A1</p>
+          <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+          <p><strong>Plate Number:</strong> ${plate}</p>
+        `;
+        stopCamera();
+        retakeBtn.style.display = 'inline-block';
+      })
+      .catch(error => {
+        alert("Failed to send image to backend.");
+        console.error("Detection error:", error);
+      });
+    }
+
+    function retakePhoto() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(st => {
+          stream = st;
+          video.srcObject = stream;
+          capturedImage.src = '';
+          parkingSlotData.innerHTML = ` 
+            <p><strong>Slot ID:</strong> A1</p>
+            <p><strong>Timestamp:</strong> --</p>
+            <p><strong>Plate Number:</strong> --</p>
+          `;
+          retakeBtn.style.display = 'none';
+          setTimeout(capturePhoto, 2000);
+        })
+        .catch(err => {
+          alert("Camera access failed.");
+          console.error(err);
+        });
+    }
+  </script>
+
+</body>
+</html>
+
+
