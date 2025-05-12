@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: number-plate-app
+    env: docker
+    plan: starter  # needed due to EasyOCR memory usage
+    branch: main
+    region: oregon
+    dockerfilePath: Dockerfile
+    autoDeploy: true
