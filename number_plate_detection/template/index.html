@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parking Management - Home</title>
+  <style>
+    html, body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      overflow-x: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #4ca1af, #2980b9);
+      background-size: 500% 500%;
+      animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Nav Styles */
+    .nav-menu {
+      background-color: rgba(0,0,0,0.5);
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      font-size: 1.1rem;
+      background-color: #4CAF50;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    }
+    .nav-links li a:hover {
+      background-color: #388e3c;
+    }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+      gap: 5px;
+    }
+    .hamburger div {
+      width: 25px;
+      height: 3px;
+      background-color: white;
+      border-radius: 2px;
+    }
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 58px;
+        right: 0;
+        height: calc(100% - 58px);
+        background-color: rgba(0, 0, 0, 0.85);
+        flex-direction: column;
+        width: 200px;
+        padding-top: 20px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.6);
+      }
+      .nav-links.active {
+        transform: translateX(0);
+      }
+      .hamburger {
+        display: flex;
+      }
+    }
+
+    /* Content */
+    .home-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3.5rem;
+      margin-bottom: 25px;
+      text-shadow: 3px 3px 15px rgba(0,0,0,0.7);
+    }
+    p {
+      font-size: 1.4rem;
+      max-width: 700px;
+      line-height: 1.6;
+      text-shadow: 1px 1px 8px rgba(0,0,0,0.6);
+    }
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div>
+
+  <nav class="nav-menu">
+    <div class="nav-container">
+      <div class="logo" style="color:white; font-weight:bold; font-size:1.5rem;">Smart Parking</div>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/admin/dashboard">Dashboard</a></li>
+        <li><a href="/adminlogout">Logout</a></li>
+      </ul>
+
+      <div class="hamburger" id="hamburger">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="home-container">
+    <h1>Welcome to Smart Parking System</h1>
+    <p>Monitor, manage, and track your parking slots easily with live vehicle capture and automated number plate detection.</p>
+    <a href="/camera" style="
+    display: inline-block;
+    margin-top: 30px;
+    background-color: #f1c40f;
+    color: #333;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    transition: background-color 0.3s ease;
+  " onmouseover="this.style.backgroundColor='#f39c12'" onmouseout="this.style.backgroundColor='#f1c40f'">
+    Start Camera
+  </a>
+  </main>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+      });
+    });
+    // function goToCameraPage() {
+    //   // Redirect to your camera capture page
+    //   window.location.href = "camera.html"; // Change this to your actual camera page
+    // }
+        function goToDashboard() {
+      window.location.href = "admin_dashboard.html";
+    }
+  </script>
+</body>
+</html>

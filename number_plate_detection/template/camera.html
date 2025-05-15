@@ -3,61 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vehicle Capture - Parking Management</title>
+  <title>Capture Vehicle Number - Parking Management</title>
   <style>
-  html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: transparent;
-  overflow-x: hidden;
-}
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', sans-serif;
+      background: #1e3c72;
       color: white;
-      overflow: auto; /* Allow natural scrolling */
-      background-color: #1e3c72;
-    }
-
-    #particles-js {
-      position: fixed;
-      width: 100%;
       height: 100%;
-      z-index: -1;
-      background: linear-gradient(-45deg, #1e3c72, #2a5298, #4ca1af, #2980b9);
-      background-size: 500% 500%;
-      animation: gradientBG 15s ease infinite;
     }
 
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    .nav-menu {
+      background-color: #0c1f41;
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+      white-space: nowrap;
+      min-width: 150px;
+      flex-shrink: 0;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    }
+    .nav-links li a:hover {
+      background-color: #388e3c;
     }
 
     .container {
-      width: 100vw;
-      height: 100vh;
-      overflow-y: auto;
-      overflow-x: hidden;
-      scrollbar-gutter: stable;
-      padding: 40px;
-      box-sizing: border-box;
-      border-radius: 0;
       text-align: center;
+      padding: 40px 20px;
     }
-
     h2 {
       font-size: 2.5rem;
-      color: #0b0900;
+      color: #f1c40f;
       margin-bottom: 25px;
       text-transform: uppercase;
-      letter-spacing: 3px;
       text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
     }
-
+    video {
+      border: 4px solid #f1c40f;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    .image-container img {
+      margin-top: 20px;
+      border-radius: 15px;
+      max-width: 100%;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+    }
+    .data-display {
+      margin-top: 25px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 25px;
+      border-radius: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .data-display p {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      margin: 10px 0;
+      text-align: left;
+    }
     button {
       background-color: #f1c40f;
       border: none;
@@ -70,59 +109,21 @@
       transition: 0.3s;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
     }
-
     button:hover {
       background-color: #f39c12;
       transform: scale(1.05);
     }
-
-    video {
-      border: 4px solid #f1c40f;
-      border-radius: 12px;
-      margin-top: 20px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    }
-
-    .image-container img {
-      margin-top: 20px;
-      border-radius: 15px;
-      max-width: 100%;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
-    }
-
-    .data-display {
-      margin-top: 25px;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 25px;
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .data-display p {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #fff;
-      margin: 10px 0;
-      text-align: left;
-    }
-
     #retakeBtn {
       display: none;
     }
-
     @media (max-width: 768px) {
       h2 {
         font-size: 1.8rem;
       }
-
       button {
         padding: 10px 20px;
         font-size: 1rem;
       }
-
       .container {
         padding: 20px;
       }
@@ -130,81 +131,43 @@
   </style>
 </head>
 <body>
-
-  <!-- Background Particle Effect -->
-  <div id="particles-js"></div>
+  <nav class="nav-menu">
+    <div class="nav-container">
+      <div class="logo">Smart Parking</div>
+      <ul class="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/admin/dashboard">Dashboard</a></li>
+      </ul>
+    </div>
+  </nav>
 
   <div class="container">
     <h2>Capture Vehicle Number Plate - Parking Management System</h2>
-
     <button onclick="startCamera()">Start Camera</button>
     <button onclick="capturePhoto()">Capture Photo</button>
     <button id="retakeBtn" onclick="retakePhoto()">Retake Photo</button>
-
     <video id="video" width="320" height="240" autoplay></video>
     <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
-
     <div class="image-container">
       <h3>Captured Vehicle Image</h3>
       <img id="capturedImage" src="" alt="Captured Vehicle" />
     </div>
-
     <div class="data-display" id="parkingSlotData">
       <p><strong>Slot ID:</strong> A1</p>
       <p><strong>Timestamp:</strong> --</p>
       <p><strong>Plate Number:</strong> --</p>
     </div>
+    <div id="qrSection"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-
   <script>
-    particlesJS("particles-js", {
-      "particles": {
-        "number": { "value": 80 },
-        "color": { "value": "#ffffff" },
-        "shape": {
-          "type": "circle",
-          "stroke": { "width": 0, "color": "#000000" }
-        },
-        "opacity": { "value": 0.5, "random": true },
-        "size": { "value": 3, "random": true },
-        "line_linked": {
-          "enable": true,
-          "distance": 150,
-          "color": "#ffffff",
-          "opacity": 0.4,
-          "width": 1
-        },
-        "move": {
-          "enable": true,
-          "speed": 2,
-          "direction": "none",
-          "random": false,
-          "straight": false,
-          "out_mode": "out"
-        }
-      },
-      "interactivity": {
-        "detect_on": "canvas",
-        "events": {
-          "onhover": { "enable": true, "mode": "grab" },
-          "onclick": { "enable": true, "mode": "push" }
-        },
-        "modes": {
-          "grab": { "distance": 140, "line_linked": { "opacity": 1 } },
-          "push": { "particles_nb": 4 }
-        }
-      },
-      "retina_detect": true
-    });
-
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
     const capturedImage = document.getElementById('capturedImage');
     const parkingSlotData = document.getElementById('parkingSlotData');
     const retakeBtn = document.getElementById('retakeBtn');
+    const qrSection = document.getElementById('qrSection');
     let stream;
 
     function startCamera() {
@@ -212,7 +175,7 @@
         .then(st => {
           stream = st;
           video.srcObject = stream;
-          setTimeout(capturePhoto, 2000); // Auto capture
+          setTimeout(capturePhoto, 2000);
         })
         .catch(error => {
           alert("Camera not accessible.");
@@ -247,6 +210,9 @@
         `;
         stopCamera();
         retakeBtn.style.display = 'inline-block';
+
+        // Show QR Proceed Button
+        qrSection.innerHTML = `<br><button onclick="window.location.href='/qrcode/${plate}'">Proceed to Dashboard</button>`;
       })
       .catch(error => {
         alert("Failed to send image to backend.");
@@ -266,6 +232,7 @@
             <p><strong>Plate Number:</strong> --</p>
           `;
           retakeBtn.style.display = 'none';
+          qrSection.innerHTML = '';
           setTimeout(capturePhoto, 2000);
         })
         .catch(err => {
@@ -274,8 +241,5 @@
         });
     }
   </script>
-
 </body>
 </html>
-
-
