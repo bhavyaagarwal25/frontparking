@@ -8,37 +8,47 @@
     html, body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      background: none;
       color: white;
       overflow-x: hidden;
       height: 100vh;
       display: flex;
       flex-direction: column;
     }
-    #particles-js {
+
+    /* Video Background */
+    .bg-video {
       position: fixed;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      background: linear-gradient(-45deg, #1e3c72, #2a5298, #4ca1af, #2980b9);
-      background-size: 500% 500%;
-      animation: gradientBG 15s ease infinite;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -3;
+      pointer-events: none;
     }
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+
+    /* Dark overlay for better text readability */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: -2;
     }
 
     /* Nav Styles */
     .nav-menu {
-      background-color: rgba(0,0,0,0.5);
+      background-color: transparent;
       padding: 12px 0;
       position: sticky;
       top: 0;
       z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
+
     .nav-container {
       max-width: 1200px;
       margin: 0 auto;
@@ -47,36 +57,46 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    .logo {
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 1.9rem;
+    }
+
     .nav-links {
       list-style: none;
       display: flex;
       gap: 20px;
     }
+
     .nav-links li a {
-      color: white;
+      color: #ffffff;
       text-decoration: none;
-      padding: 12px 20px;
-      font-size: 1.1rem;
-      background-color: #4CAF50;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+      padding: 10px 20px;
+      font-size: 1.20rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
     }
+
     .nav-links li a:hover {
-      background-color: #388e3c;
+      background-color: rgba(255, 255, 255, 0.15);
     }
+
     .hamburger {
       display: none;
       flex-direction: column;
       cursor: pointer;
       gap: 5px;
     }
+
     .hamburger div {
       width: 25px;
       height: 3px;
       background-color: white;
       border-radius: 2px;
     }
+
     @media (max-width: 768px) {
       .nav-links {
         position: fixed;
@@ -91,9 +111,11 @@
         transition: transform 0.3s ease-in-out;
         box-shadow: -2px 0 10px rgba(0,0,0,0.6);
       }
+
       .nav-links.active {
         transform: translateX(0);
       }
+
       .hamburger {
         display: flex;
       }
@@ -109,31 +131,54 @@
       padding: 40px 20px;
       text-align: center;
     }
+
     h1 {
       font-size: 3.5rem;
       margin-bottom: 25px;
-      text-shadow: 3px 3px 15px rgba(0,0,0,0.7);
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }
+
     p {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       max-width: 700px;
       line-height: 1.6;
-      text-shadow: 1px 1px 8px rgba(0,0,0,0.6);
+      text-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+    }
+
+    .start-btn {
+      display: inline-block;
+      margin-top: 30px;
+      background-color: #f1c40f;
+      color: #222;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      border-radius: 40px;
+      text-decoration: none;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+
+    .start-btn:hover {
+      background-color: #f39c12;
+      color: #111;
     }
   </style>
 </head>
 <body>
-  <div id="particles-js"></div>
+  <!-- Video Background -->
+  <video autoplay loop muted playsinline class="bg-video">
+    <source src="{{ url_for('static', filename='videos/vecteezy_aerial-view-parking-zone-off-super-highway_2020737.mp4') }}" type="video/mp4">
+  </video>
 
+  <!-- Navigation -->
   <nav class="nav-menu">
     <div class="nav-container">
-      <div class="logo" style="color:white; font-weight:bold; font-size:1.5rem;">Smart Parking</div>
-
+      <div class="logo">Smart Parking</div>
       <ul class="nav-links" id="navLinks">
         <li><a href="/admin/dashboard">Dashboard</a></li>
         <li><a href="/adminlogout">Logout</a></li>
       </ul>
-
       <div class="hamburger" id="hamburger">
         <div></div>
         <div></div>
@@ -145,20 +190,7 @@
   <main class="home-container">
     <h1>Welcome to Smart Parking System</h1>
     <p>Monitor, manage, and track your parking slots easily with live vehicle capture and automated number plate detection.</p>
-    <a href="/camera" style="
-    display: inline-block;
-    margin-top: 30px;
-    background-color: #f1c40f;
-    color: #333;
-    padding: 15px 40px;
-    font-size: 1.2rem;
-    border-radius: 50px;
-    text-decoration: none;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    transition: background-color 0.3s ease;
-  " onmouseover="this.style.backgroundColor='#f39c12'" onmouseout="this.style.backgroundColor='#f1c40f'">
-    Start Camera
-  </a>
+    <a href="/camera" class="start-btn">Start Camera</a>
   </main>
 
   <script>
@@ -174,11 +206,8 @@
         navLinks.classList.remove('active');
       });
     });
-    // function goToCameraPage() {
-    //   // Redirect to your camera capture page
-    //   window.location.href = "camera.html"; // Change this to your actual camera page
-    // }
-        function goToDashboard() {
+
+    function goToDashboard() {
       window.location.href = "admin_dashboard.html";
     }
   </script>

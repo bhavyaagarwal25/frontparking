@@ -5,7 +5,7 @@
   <title>QR Code for {{ plate }}</title>
   <style>
     body {
-      background: linear-gradient(to right, #1e3c72, #2a5298);
+      background: linear-gradient(to right, black, black);
       color: white;
       font-family: 'Segoe UI', sans-serif;
       display: flex;
@@ -21,6 +21,55 @@
       margin-bottom: 30px;
       color: #f1c40f;
       text-shadow: 1px 1px 8px rgba(0,0,0,0.7);
+    }
+     .nav-menu {
+      background-color:tra;
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap:wrap;
+    }
+    .logo {
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+      white-space: nowrap;
+      min-width: 150px;
+      flex-shrink: 0;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    }
+    .nav-links li a:hover {
+      background-color: #388e3c;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px 20px;
     }
     img {
       width: 400px;
@@ -45,6 +94,16 @@
   </style>
 </head>
 <body>
+  <nav class="nav-menu">
+    <div class="nav-container">
+      <div class="logo">Smart Parking</div>
+      <ul class="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/admin/dashboard">Dashboard</a></li>
+      </ul>
+    </div>
+  </nav>
+
   <h1>QR Code for Plate: {{ plate }}</h1>
   <img src="{{ qr_url }}" alt="QR Code for {{ plate }}" />
   <br />

@@ -9,13 +9,19 @@
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #1e3c72;
+      background: linear-gradient(-45deg, black, white, black, black);
+      background-size: 400% 400%;
       color: white;
       height: 100%;
     }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
     .nav-menu {
-      background-color: #0c1f41;
+      background-color: transparent;
       padding: 12px 0;
       position: sticky;
       top: 0;
