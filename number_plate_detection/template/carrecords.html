@@ -92,20 +92,13 @@
   <div class="section">
     <h2>Vehicle Entry</h2>
     <div class="entry-exit-log">
-      <p><strong>Plate:</strong> MH12AB1234</p>
-      <p><strong>Entry Time:</strong> 10:45 AM</p>
-      <p><strong>Slot Allocated:</strong> A1</p>
-    </div>
-    <!-- Add more dynamically here -->
-  </div>
-
-  <!-- Exit Section -->
-  <div class="section">
-    <h2>Vehicle Exit</h2>
-    <div class="entry-exit-log">
-      <p><strong>Plate:</strong> MH12AB1234</p>
-      <p><strong>Exit Time:</strong> 01:15 PM</p>
-      <p><strong>Slot Vacated:</strong> A1</p>
+      {% for vehicle in vehicles %}
+<div class="entry-exit-log">
+  <p><strong>Plate:</strong> {{ vehicle.plate }}</p>
+  <p><strong>Entry Time:</strong> {{ vehicle.entry_time }}</p>
+  <p><strong>Slot Allocated:</strong> {{ vehicle.slot }}</p>
+</div>
+{% endfor %}
     </div>
     <!-- Add more dynamically here -->
   </div>

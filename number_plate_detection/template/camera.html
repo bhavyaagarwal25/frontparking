@@ -11,8 +11,8 @@
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(-45deg, black, white, black, black);
       background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
       color: white;
-      height: 100%;
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -141,7 +141,7 @@
     <div class="nav-container">
       <div class="logo">Smart Parking</div>
       <ul class="nav-links">
-        <li><a href="/index.html">Home</a></li>
+        <li><a href="/">Home</a></li>
         <li><a href="/admin/dashboard">Dashboard</a></li>
       </ul>
     </div>
@@ -159,7 +159,7 @@
       <img id="capturedImage" src="" alt="Captured Vehicle" />
     </div>
     <div class="data-display" id="parkingSlotData">
-      <p><strong>Slot ID:</strong> A1</p>
+      <p><strong>Slot ID:</strong> --</p>
       <p><strong>Timestamp:</strong> --</p>
       <p><strong>Plate Number:</strong> --</p>
     </div>
@@ -209,22 +209,45 @@
       .then(res => res.json())
       .then(data => {
         const plate = data.plate_number || "Not Detected";
-        parkingSlotData.innerHTML = ` 
-          <p><strong>Slot ID:</strong> A1</p>
-          <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-          <p><strong>Plate Number:</strong> ${plate}</p>
-        `;
+        // parkingSlotData.innerHTML = ` 
+        //   <p><strong>Slot ID:</strong>${allocData.slot}</p>
+        //   <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+        //   <p><strong>Plate Number:</strong> ${plate}</p>
+        // `;
+      fetch('http://127.0.0.1:8080/allocate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    plateNumber: plate  
+  })
+})
+.then(res => res.json())
+.then(allocData => {
+  if (allocData.error) {
+    alert("Allocation Error: " + allocData.error);
+    return;
+  }
+
+  parkingSlotData.innerHTML = `
+    <p><strong>Slot ID:</strong> ${allocData.slot}</p>
+    <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+    <p><strong>Plate Number:</strong> ${plate}</p>
+  `;
+
         stopCamera();
         retakeBtn.style.display = 'inline-block';
-
-        // Show QR Proceed Button
-        qrSection.innerHTML = `<br><button onclick="window.location.href='/qrcode/${plate}'">Proceed to Dashboard</button>`;
+        setTimeout(() => {
+        window.location.href = `/userdashboard`;
+      }, 2000); // 2-second delay so user sees confirmation before redirect
+      });
+       
       })
       .catch(error => {
         alert("Failed to send image to backend.");
         console.error("Detection error:", error);
       });
     }
+  
 
     function retakePhoto() {
       navigator.mediaDevices.getUserMedia({ video: true })

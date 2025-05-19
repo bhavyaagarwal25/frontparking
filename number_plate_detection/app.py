@@ -4,11 +4,10 @@ import cv2
 import numpy as np
 import easyocr
 import base64
+import subprocess
 import csv
 from datetime import datetime
 from save_data import save_vehicle_log
-
-
 app = Flask(__name__, static_url_path='/static', static_folder='static', template_folder='template')
 import os
 print("Template folder path:", os.path.abspath('template'))
@@ -77,15 +76,15 @@ def carrecords():
 def admin_logout():
     session.pop('admin', None)
     return redirect(url_for('admin_login'))
-#-------qr code-------
-@app.route('/qrcode/<plate>')
-def qrcode_page(plate):
-    # QR code image URL generate karo (ya backend me generate karke yahan bhejo)
-    # qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=http://localhost:8080/userdashboard/{plate}"
+# #-------qr code-------
+# @app.route('/qrcode/<plate>')
+# def qrcode_page(plate):
+#     # QR code image URL generate karo (ya backend me generate karke yahan bhejo)
+#     # qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=http://localhost:8080/userdashboard/{plate}"
 
-    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=http://localhost:8080/userdashboard"
+#     qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=http://localhost:8080/userdashboard"
 
-    return render_template('qrcode.html', plate=plate, qr_url=qr_url)
+#     return render_template('qrcode.html', plate=plate, qr_url=qr_url)
 
 # -------- USER DASHBOARD (QR SCAN BASED) --------
 @app.route('/userdashboard')
@@ -100,9 +99,22 @@ def user_dashboard():
             entry_time = latest['Timestamp']
     except Exception as e:
         return f"Error reading log: {e}"
-    
+    path= []
+    try:
+        result = subprocess.run(['./parking', plate], capture_output=True, text=True, timeout=5)
+        
+        if result.returncode != 0 or "ERROR" in result.stdout:
+                path =["No path available "]
+        else:   
+            output = result.stdout.strip().split('\n')
+        
+            for line in output:
+                if line.startswith("Path from entry"):
+                    path_str = line.split(':')[1].strip()
+                    path = path_str.split()
+    except Exception as e:
+        path =["Error fetching path"]
 
-    path = "Entry Gate → Slot A3"
     bill = 80  # You can make this dynamic later
 
     # entry_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -129,16 +141,19 @@ def save_plate_image(image, plate_text):
 
 
 # Helper function to log data into CSV
-def log_vehicle(plate_text):
+def log_vehicle(plate_text,slot):
     log_file = 'vehicle_logs.csv'
     file_exists = os.path.isfile(log_file)
     with open(log_file, 'a', newline='') as csvfile:
-        fieldnames = ['Plate', 'Timestamp']
+        fieldnames = ['Plate','slot', 'Timestamp']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if not file_exists:
             writer.writeheader()
-        writer.writerow({'Plate': plate_text.strip().replace(" ", ""), 'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-
+        writer.writerow({
+            'Plate': plate_text.strip().replace(" ", ""),
+             'slot': slot if slot else 'N/A',
+            'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
 # -------- OCR IMAGE UPLOAD --------
 @app.route('/upload', methods=['POST'])
 def upload_image():
@@ -165,7 +180,29 @@ def upload_image():
 
         if plate_text != "Not Detected" and cropped_plate_img is not None:
             save_plate_image(cropped_plate_img, plate_text)
-            log_vehicle(plate_text)
+            #log_vehicle(plate_text)
+            try:
+                result = subprocess.run(['./parking', plate_text], capture_output=True, text=True, timeout=5)
+                output = result.stdout.strip().split('\n')
+                slot = None
+                path = []
+                for line in output:
+                    if line.startswith("Best Slot:"):
+                        slot = line.split(':')[1].strip()
+                    elif line.startswith("Path from entry"):
+                        path_str = line.split(':')[1].strip()
+                        path = path_str.split()
+                log_vehicle(plate_text, slot)
+                return jsonify({
+                    "plate_number": plate_text,
+                    "slot": slot if slot else 'N/A',
+                    
+                })
+            except Exception as e:
+                return jsonify({
+                    "plate_number": plate_text,
+                    "error": f"Allocation backend failed: {str(e)}"
+                }), 500
 
         return jsonify({"plate_number": plate_text})
 
@@ -176,11 +213,46 @@ def upload_image():
 
 # -------- OCR FUNCTION --------
 def read_plate_text(image):
-    results = reader.readtext(image)
+    #results = reader.readtext(image)
+    results = sorted(reader.readtext(image), key=lambda x: x[2], reverse=True)
+    plate_text = results[0][1] if results else "Not Detected"
+
     for (bbox, text, prob) in results:
         if len(text) > 3:
             return text
     return "Not Detected"
+
+
+
+@app.route('/allocate', methods=['POST'])
+def allocate_slot():
+    data = request.get_json()
+    plate_number = data.get('plateNumber')
+    timestamp = data.get("timestamp")
+    if not plate_number:
+        return jsonify({'error': 'No plate number provided'}), 400
+    
+    # Call your compiled C++ program with plate number as argument
+    # Assume your C++ program binary is './parking' and it accepts plate number
+    try:
+        result = subprocess.run(['./parking', plate_number], capture_output=True, text=True, timeout=5)
+        
+        if result.returncode != 0 or "ERROR" in result.stdout:
+            return jsonify({
+                "plate_number": plate_number,
+                "error": "No available slot found"
+             }), 400
+        output = result.stdout.strip().split('\n')
+        
+        slot = None
+        for line in output:
+            if line.startswith("Best Slot:"):
+                slot = line.split(':')[1].strip()
+
+        return jsonify({'slot': slot})
+
+    except Exception as e:
+        return jsonify({'error': f'Error running allocation: {str(e)}'}), 500
 
 # -------- MAIN --------
 if __name__ == '__main__':
