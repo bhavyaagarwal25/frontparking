@@ -8,6 +8,7 @@ import easyocr
 import base64
 import subprocess
 import json
+import ast
 import csv
 import os
 from datetime import datetime
@@ -212,19 +213,13 @@ def upload_image():
 #----graph-----
 @app.route('/show_path_graph', methods=['POST'])
 def show_path_graph():
-    path = request.form.get('path')
-    
-    # Safely parse the JSON string into a Python list
+    raw_path = request.form.get('path', '')
     try:
-        path = json.loads(path)  # Convert string to list
-    except json.JSONDecodeError:
-        return "Invalid path format", 400  # Return an error if JSON is invalid
-    if len(path) >= 2:
-        allocated_slot = path[-2]  # Second last node is the allocated slot
-    else:
-        allocated_slot = "Unknown"
-    return render_template('path_graph.html', path=path, allocated_slot=allocated_slot)
-
+        path = ast.literal_eval(raw_path)  # ✅ Safe alternative to eval
+        #path.reverse()  # ✅ Ensures direction: Entry ➝ Exit
+        return render_template('path_graph.html', path=path)
+    except Exception as e:
+        return jsonify({'error': f'Failed to parse path: {str(e)}'}),400
 
 
 # -------- OCR FUNCTION --------

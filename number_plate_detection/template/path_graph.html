@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <title>Parking Path</title>
@@ -88,4 +88,82 @@
   </script>
 </body>
 </html>
+ -->
 
+
+ <!DOCTYPE html>
+<html>
+<head>
+  <title>Parking Path</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+    }
+    #graph {
+      width: 100vw;
+      height: 100vh;
+      background-color: #111;
+    }
+  </style>
+</head>
+<body>
+  <div id="graph"></div>
+
+  <script>
+    // Replace this path with your actual array from Flask
+    const path = JSON.parse('{{ path | tojson | safe }}'); // Example path
+
+    const nodes = [], edges = [];
+
+    path.forEach((label, index) => {
+      nodes.push({
+        id: index,
+        label: label,
+        color: {
+          background: index === 0 ? '#2ecc71' : (index === path.length - 1 ? '#e74c3c' : '#2980b9'),
+          border: '#ffffff'
+        },
+        font: { color: "#fff", size: 30 }
+      });
+
+      if (index > 0) {
+        edges.push({
+          from: index - 1,
+          to: index,
+          arrows: 'to',
+          color: { color: "#e67e22" },
+          width: 2
+        });
+      }
+    });
+
+    const container = document.getElementById('graph');
+    const data = {
+      nodes: new vis.DataSet(nodes),
+      edges: new vis.DataSet(edges)
+    };
+
+    const options = {
+      layout: {
+        hierarchical: {
+          enabled: true,           // ✅ IMPORTANT: Must be true
+          direction: "UD",         // ✅ Top (Entry) to Bottom (Exit)
+          sortMethod: "directed"
+        }
+      },
+      physics: {
+        enabled: false
+      },
+      edges: {
+        smooth: true
+      }
+    };
+
+    const network = new vis.Network(container, data, options);
+  </script>
+</body>
+</html>
