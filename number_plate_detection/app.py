@@ -102,7 +102,7 @@ def user_dashboard():
     raw_path = request.args.get('path', '')
     path = raw_path.split(',') if raw_path else [f'Main Gate', f'Slot {slot}']
 
-    return render_template('user_dashboard.html', plate=plate, entry_time=time, path=path, bill=bill)
+    return render_template('user_dashboard.html', plate=plate, entry_time=time, slot=slot, path=path, bill=bill)
 
 # Helper function to save cropped plate image
 def save_plate_image(image, plate_text):
