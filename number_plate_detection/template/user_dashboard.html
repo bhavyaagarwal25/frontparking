@@ -27,11 +27,11 @@
     .dashboard {
       background: rgba(255, 255, 255, 0.1);
       margin: 0 auto;
-      padding: 40px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      padding: 60px;
+      border-radius: 16px;
+      width: 95%;
+      max-width: 800px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.5);
     }
     h2 {
       margin-bottom: 35px;
@@ -73,6 +73,13 @@
         font-size: 16px;
       }
     }
+    .button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 25px;
+    align-items: center;
+  }
 
     #graph {
       width: 100%;
@@ -85,89 +92,42 @@
   </style>
 </head>
 <body>
+  
+  <div class="home-btn" style="text-align: center; margin-top: 30px;">
+  <a href="/" style="
+    display: inline-block;
+    padding: 10px 25px;
+    background-color: #f39c12;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  ">
+    Home
+  </a>
+</div>
+
+
+
   <div class="dashboard">
     <div class="highlight">Welcome, {{ plate }}</div>
     <p><strong>Entry Time:</strong> {{ entry_time }}</p>
-    <!-- <p><string></string>Allocated Slot:</p>strong> {{ slot }}</p> -->
-     <p><strong>Allocated Slot:</strong> {{ slot }}</p>
-
+    <p><strong>Allocated Slot:</strong> {{ slot }}</p>
     <p><strong>Parking Path:</strong> {{ path }}</p>
     <p><strong>Total Bill:</strong> ₹{{ bill }}</p>
 
+    <div class="button-group">
     <form action="{{ url_for('camera_page') }}" method="get">
       <button type="submit" style="margin-top: 20px;">Scan Another Vehicle</button>
     </form>
 
-    <button id="showPathBtn" style="margin-top: 20px;">See Parking Path</button>
-    <div id="graph" style="display: none; height: 400px; width: 100%; margin-top: 30px;"></div>
-
-
+    <form action="{{ url_for('show_path_graph') }}" method="post" target="_blank">
+      <input type="hidden" name="path" value="{{ path }}">
+      <button type="submit">Show Fullscreen Parking Path</button>
+    </form>
   </div>
-
-<script>
-
-  document.getElementById('showPathBtn').addEventListener('click', function () {
-    const graphDiv = document.getElementById('graph');
-    graphDiv.style.display = 'block';
-
-    // Hide the button (optional)
-    this.style.display = 'none';
-
-  const path = JSON.parse('{{ path | tojson | safe }}');
-
-  const nodes = [];
-  const edges = [];
-
-  const spacing = 150; // spacing between nodes
-  const y = 200;  // fixed vertical position
-
-  // Create node objects
-  path.forEach((label, index) => {
-    nodes.push({
-      id: i,
-      label: label,
-      x: i * spacing,
-      y: y,
-      fixed: true,      // Fix the position
-      physics: false,   // Disable physics for layout
-      color: {
-        background: index === 0 ? '#2ecc71' : (i === path.length - 1 ? '#e74c3c' : '#3498db'),
-        border: '#ffffff',
-      },
-      font: { color: "#fff" },
-    });
-
-    // Add edges between consecutive nodes
-    if (i > 0) {
-      edges.push({
-        from: i - 1,
-        to: i,
-        arrows: 'to',
-        color: { color: "#e67e22" },
-        
-      });
-    }
-  });
-
-  const container = document.getElementById('graph');
-  const data = {
-    nodes: new vis.DataSet(nodes),
-    edges: new vis.DataSet(edges)
-  };
-
-  const options = {
-    layout: {
-      improvedLayout: false
-    },
-    physics: {
-      enabled: false
-    }
-  };
-
-   new vis.Network(container, data, options);
-});
-</script>
-
-
+</div>
 </body>
 </html>

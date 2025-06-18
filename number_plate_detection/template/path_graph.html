@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Parking Path</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+    }
+    #graph {
+      width: 100vw;
+      height: 100vh;
+      background-color: #111;
+    }
+  </style>
+</head>
+<body>
+  <div id="graph"></div>
+
+  <script>
+    const path = JSON.parse('{{ path | tojson | safe }}').reverse();
+    const allocatedSlot = "{{ allocated_slot }}";
+
+    const nodes = [];
+    const edges = [];
+
+    path.forEach((label, index) => {
+      let backgroundColor = '#2980b9';  // default for middle nodes
+
+      // Check for allocated slot first
+      if (label === allocatedSlot) {
+        backgroundColor = '#2ecc71'; 
+      } else if (label.toLowerCase().includes("entry")) {
+        backgroundColor = '#e74c3c'; // red for Entry
+      } else if (label.toLowerCase().includes("exit")) {
+        backgroundColor = '#2ecc71'; // green for Exit
+      }
+
+      // Debugging: Log the label and allocated slot
+      //console.log(Label: ${label}, Allocated Slot: ${allocatedSlot});
+
+      nodes.push({
+        id: index,
+        label: label,
+        color: {
+          background: backgroundColor,
+          border: '#ffffff'
+        },
+        font: { color: "#fff", size: 30 }
+      });
+
+      if (index > 0) {
+        edges.push({
+          from: index,
+          to: index - 1,
+          arrows: 'to',
+          color: { color: "#e67e22" },
+          width: 2
+        });
+      }
+    });
+
+    const container = document.getElementById('graph');
+    const data = {
+      nodes: new vis.DataSet(nodes),
+      edges: new vis.DataSet(edges)
+    };
+
+    const options = {
+      layout: {
+        hierarchical: {
+          enabled: false,
+          direction: "LR"
+        }
+      },
+      physics: {
+        enabled: false
+      },
+      edges: {
+        smooth: true
+      }
+    };
+
+    new vis.Network(container, data, options);
+  </script>
+</body>
+</html>
+

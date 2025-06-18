@@ -1,0 +1,65 @@
+<!-- templates/exit_success.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exit Successful</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    .card {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 1.4rem;
+      margin: 10px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 30px;
+      background-color: white;
+      color: #27ae60;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #f1f1f1;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>✅ Vehicle Exit Successful</h1>
+    <p>Vehicle Number: <strong>{{ number }}</strong></p>
+    <p>Freed Slot: <strong>{{ slot }}</strong></p>
+    <a class="btn" href="/">Go Back to Home</a>
+  </div>
+</body>
+</html>

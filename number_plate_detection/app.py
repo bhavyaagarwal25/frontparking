@@ -209,6 +209,23 @@ def upload_image():
         print("Error during upload:", str(e))
         return jsonify({"error": "Failed to process image"}), 500
 
+#----graph-----
+@app.route('/show_path_graph', methods=['POST'])
+def show_path_graph():
+    path = request.form.get('path')
+    
+    # Safely parse the JSON string into a Python list
+    try:
+        path = json.loads(path)  # Convert string to list
+    except json.JSONDecodeError:
+        return "Invalid path format", 400  # Return an error if JSON is invalid
+    if len(path) >= 2:
+        allocated_slot = path[-2]  # Second last node is the allocated slot
+    else:
+        allocated_slot = "Unknown"
+    return render_template('path_graph.html', path=path, allocated_slot=allocated_slot)
+
+
 
 # -------- OCR FUNCTION --------
 def read_plate_text(image):
@@ -265,6 +282,145 @@ def allocate_slot():
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Error running allocation: {str(e)}'}), 500
+    
+# -------EXIT----------
+@app.route('/exit')
+def exit_vehicle():
+    return render_template("exit_camera.html")
+
+
+def capture_exit():
+    number = "UNKNOWN"
+    slot = "UNKNOWN"
+
+    try:
+        if os.path.exists('slots.txt'):
+            with open('slots.txt', 'r') as f:
+                lines = f.readlines()
+
+            if lines:
+                last_line = lines[-1].strip()
+                if ':' in last_line:
+                    slot, number = last_line.split(':', 1)
+                    slot = slot.strip()
+                    number = number.strip()
+
+                # Remove the last line from slots.txt (i.e., the exited vehicle)
+                with open('slots.txt', 'w') as f:
+                    for line in lines:
+                        if line.strip() != last_line:
+                            f.write(line)
+
+                # Log the exit
+                log_exit_locally(number)
+
+    except Exception as e:
+        print(f"Error in capture_exit: {e}")
+
+    return number, slot
+
+
+@app.route('/log_exit', methods=['POST'])
+def log_exit():
+    data = request.get_json()
+    plate = data.get('plate')
+
+    if not plate:
+        return jsonify({"error": "Plate number not provided"}), 400
+
+    # Log exit into a separate file or update existing CSV
+    exit_file = 'exit_logs.csv'
+    file_exists = os.path.isfile(exit_file)
+    with open(exit_file, 'a', newline='') as csvfile:
+        fieldnames = ['Plate', 'Exit_Timestamp']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow({
+            'Plate': plate.strip().replace(" ", ""),
+            'Exit_Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+    return jsonify({"message": "Exit logged successfully"}), 200
+
+
+#-----Exit_Detect----
+@app.route('/exit/detect', methods=['POST'])
+def detect_exit_plate():
+    try:
+        data = request.get_json()
+        if not data or 'image' not in data:
+            return jsonify({'error': 'No image data provided'}), 400
+
+        img_data = data['image'].split(',')[1]
+        img_bytes = base64.b64decode(img_data)
+        img_array = np.frombuffer(img_bytes, np.uint8)
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
+        if img is None:
+            return jsonify({'error': 'Failed to decode image'}), 400
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        results = sorted(reader.readtext(gray), key=lambda x: x[2], reverse=True)
+
+        plate = "UNKNOWN"
+        for (_, text, prob) in results:
+            if len(text) >= 4:
+                plate = text.strip().replace(" ", "")
+                break
+
+        if plate == "UNKNOWN":
+            return jsonify({'error': 'Could not detect plate'}), 400
+
+        # Save exit log
+        freed_slot = log_exit_locally(plate)
+        # return render_template("exit_success.html", number=plate, slot=freed_slot)
+
+        if not freed_slot:
+            return jsonify({'error': ' Vehicle not found in the parking lot'}), 404
+
+
+
+        return jsonify({
+            'plate': plate,
+            'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'bill': 50,  # You can calculate the actual bill here
+            'slot': freed_slot
+        })
+
+        # return render_template("exit_success.html", number=plate, slot=detected_slot)
+
+
+    except Exception as e:
+        return jsonify({'error': f'Error during detection: {str(e)}'}), 500
+
+
+# 👇 Also add this helper function (outside any route, anywhere above main)
+def log_exit_locally(plate):
+    updated_lines = []
+    freed_slot = None
+
+    plate = plate.upper().replace(" ", "").replace("]", "")
+
+    with open('slots.txt', 'r') as file:
+        lines = file.readlines()
+
+    for line in lines:
+        parts = line.strip().split()
+        if len(parts) == 2:
+            saved_plate = parts[0].replace("]", "")
+            slot = parts[1]
+            if saved_plate == plate:
+                freed_slot = slot
+                continue  # Don't keep this line (vehicle exited)
+        updated_lines.append(line)
+
+    if freed_slot:
+        with open('slots.txt', 'w') as file:
+            file.writelines(updated_lines)
+
+    return freed_slot  # Will be None if plate not found
+
 
 # -------- MAIN --------
 print("Ready to run Flask app...")

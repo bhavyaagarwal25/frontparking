@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exit - Scan Vehicle Number Plate</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(-45deg, black, white, black, black);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: white;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .nav-menu {
+      background-color: transparent;
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    }
+    .nav-links li a:hover {
+      background-color: #388e3c;
+    }
+    .container {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    h2 {
+      font-size: 2.5rem;
+      color: #f1c40f;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    }
+    video {
+      border: 4px solid #f1c40f;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      max-width: 100%;
+    }
+    .data-display {
+      margin-top: 25px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 25px;
+      border-radius: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .data-display p {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      margin: 10px 0;
+      text-align: left;
+    }
+    button {
+      background-color: #f1c40f;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      color: #333;
+      border-radius: 10px;
+      margin-top: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+    button:hover {
+      background-color: #f39c12;
+      transform: scale(1.05);
+    }
+    #retakeBtn {
+      display: none;
+    /* @media (max-width: 768px) {
+      h2 {
+        font-size: 1.8rem;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 1rem;
+      }
+      .container {
+        padding: 20px;
+      } */
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav-menu">
+    <div class="nav-container">
+      <div class="logo">Smart Parking</div>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/admin/dashboard">Dashboard</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Exit Gate - Vehicle Detection</h2>
+    <button id="startBtn" onclick="startCamera()">Start Camera</button>
+    <button id="captureBtn" onclick="capturePhoto()" disabled>Capture Photo</button>
+    <button id="retakeBtn" onclick="retakePhoto()">Retake Photo</button>
+
+    <video id="video" width="320" height="240" autoplay muted playsinline></video>
+    <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
+
+    <div class="data-display" id="result">
+      <p><strong>Plate Number:</strong> --</p>
+      <p><strong>Slot Freed:</strong> --</p>
+    </div>
+  </div>
+
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const result = document.getElementById('result');
+    const startBtn = document.getElementById('startBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    let stream;
+
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(st => {
+          stream = st;
+          video.srcObject = stream;
+          startBtn.disabled = true;
+          captureBtn.disabled = false;
+          retakeBtn.style.display = 'none';
+          result.innerHTML = `
+            <p><strong>Plate Number:</strong> --</p>
+            <p><strong>Slot Freed:</strong> --</p>
+          `;
+          setTimeout(() => {
+            capturePhoto();
+          }, 3000);
+        })
+        .catch(error => {
+          alert("Camera not accessible.");
+          console.error(error);
+        });
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      }
+      startBtn.disabled = false;
+      captureBtn.disabled = true;
+    }
+
+    function capturePhoto() {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/jpeg');
+
+      fetch('/exit/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert("❌ " + data.error);
+          retakeBtn.style.display = 'inline-block';
+          stopCamera();
+        } else {
+          result.innerHTML = `
+            <p><strong>Plate Number:</strong> ${data.plate}</p>
+            <p><strong>Slot Freed:</strong> ${data.slot}</p>
+          `;
+          stopCamera();
+          retakeBtn.style.display = 'inline-block';
+        }
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("Error: " + err.message);
+        stopCamera();
+        retakeBtn.style.display = 'inline-block';
+      });
+    }
+
+    function retakePhoto() {
+      stopCamera();
+      startCamera();
+    }
+  </script>
+</body>
+</html>
