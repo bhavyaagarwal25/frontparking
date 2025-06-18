@@ -149,10 +149,10 @@
 
   <div class="container">
     <h2>Capture Vehicle Number Plate - Parking Management System</h2>
-    <button onclick="startCamera()">Start Camera</button>
-    <button onclick="capturePhoto()">Capture Photo</button>
+    <button id="startBtn" onclick="startCamera()">Start Camera</button>
+    <button id="captureBtn" onclick="capturePhoto()" disabled>Capture Photo</button>
     <button id="retakeBtn" onclick="retakePhoto()">Retake Photo</button>
-    <video id="video" width="320" height="240" autoplay></video>
+    <video id="video" width="320" height="240" autoplay muted playsinline></video>
     <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
     <div class="image-container">
       <h3>Captured Vehicle Image</h3>
@@ -166,109 +166,107 @@
     <div id="qrSection"></div>
   </div>
 
-  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-    const capturedImage = document.getElementById('capturedImage');
-    const parkingSlotData = document.getElementById('parkingSlotData');
-    const retakeBtn = document.getElementById('retakeBtn');
-    const qrSection = document.getElementById('qrSection');
-    let stream;
+<script>
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const context = canvas.getContext('2d');
+  const capturedImage = document.getElementById('capturedImage');
+  const parkingSlotData = document.getElementById('parkingSlotData');
+  const retakeBtn = document.getElementById('retakeBtn');
+  const startBtn = document.getElementById('startBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  let stream;
+  let plate = ""; // ✅ Global scope for access in later .then blocks
 
-    function startCamera() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(st => {
-          stream = st;
-          video.srcObject = stream;
-          setTimeout(capturePhoto, 2000);
-        })
-        .catch(error => {
-          alert("Camera not accessible.");
-          console.error(error);
-        });
-    }
-
-    function stopCamera() {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
-      }
-    }
-
-    function capturePhoto() {
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL('image/png');
-      capturedImage.src = imageData;
-
-      fetch('http://127.0.0.1:8080/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageData })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const plate = data.plate_number || "Not Detected";
-        // parkingSlotData.innerHTML = ` 
-        //   <p><strong>Slot ID:</strong>${allocData.slot}</p>
-        //   <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-        //   <p><strong>Plate Number:</strong> ${plate}</p>
-        // `;
-      fetch('http://127.0.0.1:8080/allocate', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    plateNumber: plate  
-  })
-})
-.then(res => res.json())
-.then(allocData => {
-  if (allocData.error) {
-    alert("Allocation Error: " + allocData.error);
-    return;
-  }
-
-  parkingSlotData.innerHTML = `
-    <p><strong>Slot ID:</strong> ${allocData.slot}</p>
-    <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-    <p><strong>Plate Number:</strong> ${plate}</p>
-  `;
-
-        stopCamera();
-        retakeBtn.style.display = 'inline-block';
+  function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(st => {
+        stream = st;
+        video.srcObject = stream;
+        startBtn.disabled = true;
+        captureBtn.disabled = false;
+        retakeBtn.style.display = 'none';
+        capturedImage.src = '';
+        parkingSlotData.innerHTML = `
+          <p><strong>Slot ID:</strong> --</p>
+          <p><strong>Timestamp:</strong> --</p>
+          <p><strong>Plate Number:</strong> --</p>
+        `;
         setTimeout(() => {
-        window.location.href = `/userdashboard`;
-      }, 2000); // 2-second delay so user sees confirmation before redirect
-      });
-       
+          capturePhoto();
+        }, 3000);
       })
       .catch(error => {
-        alert("Failed to send image to backend.");
-        console.error("Detection error:", error);
+        alert("Camera not accessible. Please allow camera permissions and reload.");
+        console.error(error);
       });
-    }
-  
+  }
 
-    function retakePhoto() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(st => {
-          stream = st;
-          video.srcObject = stream;
-          capturedImage.src = '';
-          parkingSlotData.innerHTML = ` 
-            <p><strong>Slot ID:</strong> A1</p>
-            <p><strong>Timestamp:</strong> --</p>
-            <p><strong>Plate Number:</strong> --</p>
-          `;
-          retakeBtn.style.display = 'none';
-          qrSection.innerHTML = '';
-          setTimeout(capturePhoto, 2000);
-        })
-        .catch(err => {
-          alert("Camera access failed.");
-          console.error(err);
-        });
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
     }
-  </script>
+    startBtn.disabled = false;
+    captureBtn.disabled = true;
+  }
+
+  function capturePhoto() {
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/jpeg');
+    capturedImage.src = imageData;
+
+    fetch('http://127.0.0.1:8080/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageData })
+    })
+    .then(res => res.json())
+    .then(data => {
+      plate = data.plate_number || "Not Detected";
+      if (plate === "Not Detected") {
+        alert("Plate number not detected. Please retake the photo.");
+        retakeBtn.style.display = 'inline-block';
+        stopCamera();
+        throw new Error("Plate not detected");
+      }
+
+      return fetch('http://127.0.0.1:8080/allocate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plateNumber: plate })
+      });
+    })
+    .then(res => res.json())
+    .then(allocData => {
+      const timestamp = new Date().toLocaleString();
+      parkingSlotData.innerHTML = `
+        <p><strong>Slot ID:</strong> ${allocData.slot}</p>
+        <p><strong>Timestamp:</strong> ${timestamp}</p>
+        <p><strong>Plate Number:</strong> ${plate}</p>
+      `;
+
+      stopCamera();
+      retakeBtn.style.display = 'inline-block';
+
+      setTimeout(() => {
+       const url = `/userdashboard?plate=${plate}&slot=${allocData.slot}&time=${timestamp}&path=${encodeURIComponent(allocData.path)}`;
+        window.location.href = url;
+      }, 2000);
+    })
+    .catch(error => {
+      alert("Failed to process: " + error.message);
+      console.error("Detection/allocation error:", error);
+      stopCamera();
+      retakeBtn.style.display = 'inline-block';
+    });
+  }
+
+  function retakePhoto() {
+    stopCamera();
+    startCamera();
+  }
+</script>
+
 </body>
 </html>

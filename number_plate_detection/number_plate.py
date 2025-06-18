@@ -4,7 +4,7 @@ import pytesseract
 import re
 import numpy as np
 from datetime import datetime
-from save_data import save_vehicle_entry
+from save_data import save_vehicle_log
 import logging
 from collections import Counter
 
@@ -60,7 +60,7 @@ def clean_plate_text(text):
 
 def save_plate_data(plate_text, img_roi, count):
     # 1. Save entry in CSV using save_data.py function
-    save_vehicle_entry(plate_text, slot="P12", gate="Entry", path="Straight → Left", status="IN")
+    save_vehicle_log(plate_text, slot="P12", gate="Entry", path="Straight → Left", status="IN")
 
     # 2. Save detected plate image in plates/plate_img folder
     save_path = f"plates/plate_img/detected_{plate_text}_{count}.jpg"
@@ -161,3 +161,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+         
