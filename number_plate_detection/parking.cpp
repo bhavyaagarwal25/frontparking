@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
     vector<int> dist, parent;
     g.dijkstra(entryId, dist, parent);
 
-    set<string> alreadyAllocated = getAllocatedSlots("C:\\Users\\Gaurav Negi\\Desktop\\aa\\frontparking\\number_plate_detection\\slots.txt");
+    set<string> alreadyAllocated = getAllocatedSlots("slots.txt");
 
     vector<pair<int, string>> slots;
             // for (char r : rows)
@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
     string finalSlotName = "";
 
 // 🧠 First, check if plate already has a slot assigned
-ifstream checkFile("C:\\Users\\Gaurav Negi\\Desktop\\aa\\frontparking\\number_plate_detection\\slots.txt");
+ifstream checkFile("slots.txt");
 string existingPlate, existingSlot;
 bool alreadyExists = false;
 
@@ -212,7 +212,7 @@ if (!alreadyExists) {
         return 1;
     }
 
-    saveAllocation("C:\\Users\\Gaurav Negi\\Desktop\\aa\\frontparking\\number_plate_detection\\slots.txt", plate, finalSlotName);
+    saveAllocation("slots.txt", plate, finalSlotName);
 }
 
     // set<string> alreadyAllocated = getAllocatedSlots("slots.txt");
